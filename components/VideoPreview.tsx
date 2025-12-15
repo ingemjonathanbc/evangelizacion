@@ -90,7 +90,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({ reading, asset }) => {
   };
 
   // --- MULTI-IMAGE LOGIC ---
-  const images = asset.imageUrls && asset.imageUrls.length > 0 ? asset.imageUrls : (asset.imageUrl ? [asset.imageUrl] : []);
+  const images = asset.imageUrls && asset.imageUrls.length > 0 ? asset.imageUrls : [];
   
   // Calculate which image to show based on progress (0-100)
   const currentImageIndex = images.length > 0 

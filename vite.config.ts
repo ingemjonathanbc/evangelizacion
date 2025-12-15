@@ -6,19 +6,12 @@ export default defineConfig(({ mode }) => {
   // Fix: Cast process to any to resolve TS error "Property 'cwd' does not exist on type 'Process'"
   const env = loadEnv(mode, (process as any).cwd(), '');
 
-  const apiKey = env.API_KEY || env.VITE_API_KEY || env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY;
-
-  if (apiKey) {
-    console.log("✅ API_KEY loaded successfully in Vite config.");
-  } else {
-    console.warn("⚠️ API_KEY not found in .env files. Gemini capabilities will be disabled.");
-  }
-
   return {
     plugins: [react()],
     define: {
       // Definir process.env.API_KEY con el valor del sistema o archivo .env
-      'process.env.API_KEY': JSON.stringify(apiKey),
+      // Definir process.env.API_KEY con el valor del sistema o archivo .env, buscando verias opciones
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY || env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY),
       // Definir un objeto vacío para process.env para evitar crash por 'ReferenceError'
       'process.env': {},
     },

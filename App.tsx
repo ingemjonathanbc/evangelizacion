@@ -41,7 +41,7 @@ const App: React.FC = () => {
         handleGenerateAllAssets(pendingReading);
       }
     }
-  }, [state.readings, state.assets, state.isAutoMode]); // Added state.assets dependence
+  }, [state.readings, state.assets, state.isAutoMode]);
 
   // --- AUTOMATION EFFECT 2: Trigger Video when Assets are ready ---
   useEffect(() => {

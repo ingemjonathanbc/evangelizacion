@@ -10,15 +10,15 @@ interface ReadingCardProps {
   onGenerateVideo: (reading: ReadingContent) => void;
 }
 
-const ReadingCard: React.FC<ReadingCardProps> = ({
-  reading,
-  asset,
+const ReadingCard: React.FC<ReadingCardProps> = ({ 
+  reading, 
+  asset, 
   onGenerateAssets,
   onGenerateVideo
 }) => {
   const isGeneratingAssets = asset.isGeneratingImage || asset.isGeneratingAudio;
   const isGeneratingVideo = asset.isGeneratingVideo;
-
+  
   // Updated check for multiple images
   const hasImages = asset.imageUrls && asset.imageUrls.length > 0;
   const hasAssets = hasImages && asset.audioUrl;
@@ -32,11 +32,11 @@ const ReadingCard: React.FC<ReadingCardProps> = ({
       // Auto-download logic
       const link = document.createElement('a');
       link.href = asset.videoUrl;
-      link.download = `video-${reading.id}.webm`;
+      link.download = `video-${reading.id}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
+      
       // Mark as downloaded
       lastDownloadedUrl.current = asset.videoUrl;
     }
@@ -65,10 +65,11 @@ const ReadingCard: React.FC<ReadingCardProps> = ({
           <button
             onClick={() => onGenerateAssets(reading)}
             disabled={isGeneratingAssets || isGeneratingVideo}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg ${hasAssets
-              ? 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700'
-              : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-              } disabled:opacity-50`}
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg ${
+              hasAssets 
+                ? 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700' 
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            } disabled:opacity-50`}
           >
             {isGeneratingAssets ? (
               <Loader2 className="animate-spin w-4 h-4" />
@@ -79,25 +80,26 @@ const ReadingCard: React.FC<ReadingCardProps> = ({
             )}
             {isGeneratingAssets ? 'Creando (3 Escenas + Audio)...' : hasAssets ? 'Regenerar Assets' : '1. Generar Assets'}
           </button>
-
+          
           {/* Step 2: Render Video */}
           <button
             onClick={() => onGenerateVideo(reading)}
             disabled={!hasAssets || isGeneratingVideo || isGeneratingAssets}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg ${hasVideo
-              ? 'bg-green-600 hover:bg-green-500 text-white border border-green-500'
-              : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white'
-              } disabled:opacity-30 disabled:cursor-not-allowed`}
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg ${
+              hasVideo
+                ? 'bg-green-600 hover:bg-green-500 text-white border border-green-500' 
+                : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white'
+            } disabled:opacity-30 disabled:cursor-not-allowed`}
           >
-            {isGeneratingVideo ? (
+             {isGeneratingVideo ? (
               <>
                 <Loader2 className="animate-spin w-4 h-4" />
                 <span>Renderizando ({Math.floor(Math.random() * 100)}%)...</span>
               </>
             ) : hasVideo ? (
               <>
-                <CheckCircle className="w-4 h-4" />
-                <span>Video Listo (Auto-Descargado)</span>
+                 <CheckCircle className="w-4 h-4" />
+                 <span>Video Listo (Auto-Descargado)</span>
               </>
             ) : (
               <>
@@ -107,26 +109,26 @@ const ReadingCard: React.FC<ReadingCardProps> = ({
             )}
           </button>
         </div>
-
+        
         {hasVideo && (
-          <div className="mt-4 p-3 bg-green-900/20 border border-green-800 rounded text-center animate-in fade-in zoom-in duration-300">
-            <p className="text-green-300 text-xs mb-2">¡Video renderizado y descargado!</p>
-            <a
-              href={asset.videoUrl}
-              download={`video-${reading.id}.mp4`}
-              className="inline-block px-6 py-2 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-500 transition-colors"
-            >
-              Volver a descargar
-            </a>
-          </div>
+            <div className="mt-4 p-3 bg-green-900/20 border border-green-800 rounded text-center animate-in fade-in zoom-in duration-300">
+                <p className="text-green-300 text-xs mb-2">¡Video renderizado y descargado!</p>
+                <a 
+                  href={asset.videoUrl} 
+                  download={`video-${reading.id}.mp4`}
+                  className="inline-block px-6 py-2 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-500 transition-colors"
+                >
+                    Volver a descargar
+                </a>
+            </div>
         )}
       </div>
 
       {/* Right: Preview */}
       <div className="p-6 bg-gray-950 flex flex-col items-center justify-center min-w-[350px] border-l border-gray-800">
         <div className="flex items-center gap-2 mb-4 text-gray-500">
-          <PlayCircle size={14} />
-          <h3 className="text-xs font-bold uppercase tracking-widest">Vista Previa (3 Escenas)</h3>
+             <PlayCircle size={14} />
+             <h3 className="text-xs font-bold uppercase tracking-widest">Vista Previa (3 Escenas)</h3>
         </div>
         <VideoPreview reading={reading} asset={asset} />
       </div>

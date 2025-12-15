@@ -3,18 +3,18 @@ import { ReadingContent, GeneratedAsset } from "../types";
 // Canvas constants for 9:16 Short/TikTok format (HD)
 const WIDTH = 720;
 const HEIGHT = 1280;
-const PADDING = 80; 
+const PADDING = 80;
 
 // Fonts
-const FONT_SIZE_TEXT = 44; 
-const LINE_HEIGHT_TEXT = 70; 
+const FONT_SIZE_TEXT = 44;
+const LINE_HEIGHT_TEXT = 70;
 const FONT_SIZE_TITLE = 38;
 const FONT_SIZE_BADGE = 26;
 
 // Layout Constants 
-const TOP_SAFE_AREA = 340; 
+const TOP_SAFE_AREA = 340;
 // Increased bottom safe area to make room for CTA + Reference Pill
-const BOTTOM_SAFE_AREA = 400; 
+const BOTTOM_SAFE_AREA = 400;
 
 /**
  * Loads an image from a URL into an HTMLImageElement
@@ -74,35 +74,35 @@ const fillRoundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: n
 const calculateLayout = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) => {
   const words = text.split(/\s+/).filter(w => w.length > 0);
   const spaceWidth = ctx.measureText(' ').width;
-  
+
   const lines: { words: { text: string; width: number; x: number }[], y: number }[] = [];
-  
+
   let currentLineWords: { text: string; width: number }[] = [];
   let currentLineWidth = 0;
 
   words.forEach(word => {
     const wordWidth = ctx.measureText(word).width;
-    const newLineWidth = currentLineWidth === 0 
-      ? wordWidth 
+    const newLineWidth = currentLineWidth === 0
+      ? wordWidth
       : currentLineWidth + spaceWidth + wordWidth;
 
     if (newLineWidth < maxWidth) {
       currentLineWords.push({ text: word, width: wordWidth });
       currentLineWidth = newLineWidth;
     } else {
-      lines.push({ words: [], y: 0 }); 
+      lines.push({ words: [], y: 0 });
       const lastLineIndex = lines.length - 1;
-      
+
       let currentX = (WIDTH - currentLineWidth) / 2;
-      
+
       const wordsWithPos = currentLineWords.map(w => {
         const item = { ...w, x: currentX };
         currentX += w.width + spaceWidth;
         return item;
       });
-      
+
       lines[lastLineIndex].words = wordsWithPos;
-      
+
       currentLineWords = [{ text: word, width: wordWidth }];
       currentLineWidth = wordWidth;
     }
@@ -113,9 +113,9 @@ const calculateLayout = (ctx: CanvasRenderingContext2D, text: string, maxWidth: 
     const lastLineIndex = lines.length - 1;
     let currentX = (WIDTH - currentLineWidth) / 2;
     const wordsWithPos = currentLineWords.map(w => {
-        const item = { ...w, x: currentX };
-        currentX += w.width + spaceWidth;
-        return item;
+      const item = { ...w, x: currentX };
+      currentX += w.width + spaceWidth;
+      return item;
     });
     lines[lastLineIndex].words = wordsWithPos;
   }
@@ -123,7 +123,7 @@ const calculateLayout = (ctx: CanvasRenderingContext2D, text: string, maxWidth: 
   const wordMap: { text: string; x: number; y: number; lineIndex: number }[] = [];
   lines.forEach((line, lineIdx) => {
     const lineY = lineIdx * LINE_HEIGHT_TEXT;
-    line.y = lineY; 
+    line.y = lineY;
     line.words.forEach(w => {
       wordMap.push({
         text: w.text,
@@ -143,11 +143,11 @@ const lerp = (start: number, end: number, factor: number) => {
 
 // --- PARTICLE SYSTEM FOR "DIVINE ATMOSPHERE" ---
 class ParticleSystem {
-  particles: {x: number, y: number, r: number, speed: number, alpha: number}[];
+  particles: { x: number, y: number, r: number, speed: number, alpha: number }[];
 
   constructor(count: number) {
     this.particles = [];
-    for(let i=0; i<count; i++) {
+    for (let i = 0; i < count; i++) {
       this.particles.push(this.createParticle());
     }
   }
@@ -164,7 +164,7 @@ class ParticleSystem {
 
   updateAndDraw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "rgba(255, 215, 0, 0.6)"; // Gold
-    
+
     this.particles.forEach(p => {
       p.y -= p.speed;
       p.alpha -= 0.002;
@@ -205,7 +205,7 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
   const audioCtx = new AudioContextClass();
   const dest = audioCtx.createMediaStreamDestination();
   const source = audioCtx.createMediaElementSource(audio);
-  
+
   // Analyser node for visualizer
   const analyser = audioCtx.createAnalyser();
   analyser.fftSize = 64; // Low resolution for chunky bars
@@ -214,32 +214,32 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
 
   source.connect(analyser);
   analyser.connect(dest);
-  analyser.connect(audioCtx.destination); 
+  analyser.connect(audioCtx.destination);
 
   // Init Particles
   const particles = new ParticleSystem(40);
 
   // --- PRE-CALCULATE LAYOUT ---
-  
+
   ctx.font = `900 ${FONT_SIZE_TITLE}px Inter, sans-serif`;
   const titleWords = reading.title.toUpperCase().split(' ');
   const titleLines: string[] = [];
   let currentTitleLine = titleWords[0];
-  for(let i=1; i<titleWords.length; i++) {
-     const w = titleWords[i];
-     const width = ctx.measureText(currentTitleLine + " " + w).width;
-     if(width < WIDTH - 140) {
-         currentTitleLine += " " + w;
-     } else {
-         titleLines.push(currentTitleLine);
-         currentTitleLine = w;
-     }
+  for (let i = 1; i < titleWords.length; i++) {
+    const w = titleWords[i];
+    const width = ctx.measureText(currentTitleLine + " " + w).width;
+    if (width < WIDTH - 140) {
+      currentTitleLine += " " + w;
+    } else {
+      titleLines.push(currentTitleLine);
+      currentTitleLine = w;
+    }
   }
   titleLines.push(currentTitleLine);
 
-  ctx.font = `900 ${FONT_SIZE_TEXT}px Inter, sans-serif`; 
+  ctx.font = `900 ${FONT_SIZE_TEXT}px Inter, sans-serif`;
   const { wordMap } = calculateLayout(ctx, reading.text, WIDTH - (PADDING * 2));
-  const allWordsFlat = reading.text.split(/\s+/).filter(w => w.length > 0); 
+  const allWordsFlat = reading.text.split(/\s+/).filter(w => w.length > 0);
 
   const centerY = HEIGHT / 2;
   let smoothedScrollY = centerY - (wordMap[0]?.y || 0);
@@ -250,10 +250,10 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
   if (audioTrack) stream.addTrack(audioTrack);
 
   const chunks: Blob[] = [];
-  let mimeType = 'video/webm'; 
+  let mimeType = 'video/webm';
   if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
   else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) mimeType = 'video/webm;codecs=h264';
-  
+
   const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 15000000 });
   recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
@@ -265,21 +265,41 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
       audioCtx.close();
     };
 
-    recorder.start();
-    audio.play().catch(e => console.error(e));
+    // Start recording ONLY after audio actually starts to avoid "paused" race condition
+    audio.play()
+      .then(() => {
+        recorder.start();
+        drawFrame();
+      })
+      .catch(e => {
+        console.error("Audio playback failed:", e);
+        reject(e);
+      });
 
     const drawFrame = () => {
-      if (audio.paused || audio.ended) {
-        if (recorder.state === 'recording') recorder.stop();
+      // Robust check: End only if actually ended OR paused after having started
+      if (audio.ended) {
+        // If we haven't started the ending sequence, start it now
+        if (!(recorder as any)._isEnding) {
+          (recorder as any)._isEnding = true;
+          // Stop recorder after 2 seconds
+          setTimeout(() => {
+            if (recorder.state === 'recording') recorder.stop();
+          }, 2000);
+        }
+        // IMPORTANT: Continue drawing frames for those 2 seconds!
+        // Do NOT return here. fall through to drawing.
+      } else if ((recorder as any)._isEnding && recorder.state === 'inactive') {
+        // If recorder actually stopped, stop loop
         return;
       }
 
       // Get Audio Data for Visuals
       analyser.getByteFrequencyData(dataArray);
       let avgVolume = 0;
-      for(let i=0; i<bufferLength; i++) avgVolume += dataArray[i];
+      for (let i = 0; i < bufferLength; i++) avgVolume += dataArray[i];
       avgVolume = avgVolume / bufferLength;
-      
+
       const duration = audio.duration || 1;
       const currentTime = audio.currentTime;
       const progress = currentTime / duration;
@@ -317,7 +337,7 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
 
       // Dynamic Zoom + Beat Pulse (Resets for each image via localProgress)
       const pulseScale = (avgVolume / 255) * 0.05;
-      const scale = 1 + (localProgress * 0.15) + pulseScale; 
+      const scale = 1 + (localProgress * 0.15) + pulseScale;
 
       const viewW = cropW / scale;
       const viewH = cropH / scale;
@@ -346,22 +366,22 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
       // Adjust clip to respect new larger bottom safe area
       const clipHeight = HEIGHT - TOP_SAFE_AREA - BOTTOM_SAFE_AREA;
       ctx.rect(0, TOP_SAFE_AREA, WIDTH, clipHeight);
-      ctx.clip(); 
+      ctx.clip();
 
       const currentWordIndex = Math.min(
-        Math.floor(progress * allWordsFlat.length), 
+        Math.floor(progress * allWordsFlat.length),
         allWordsFlat.length - 1
       );
       const currentWordData = wordMap[currentWordIndex];
       const targetY = currentWordData ? currentWordData.y : 0;
-      
-      const targetScrollY = centerY - targetY;
-      smoothedScrollY = lerp(smoothedScrollY, targetScrollY, 0.1); 
 
-      ctx.translate(0, smoothedScrollY); 
+      const targetScrollY = centerY - targetY;
+      smoothedScrollY = lerp(smoothedScrollY, targetScrollY, 0.1);
+
+      ctx.translate(0, smoothedScrollY);
 
       ctx.font = `900 ${FONT_SIZE_TEXT}px Inter, sans-serif`;
-      ctx.textAlign = "left"; 
+      ctx.textAlign = "left";
       ctx.textBaseline = "top";
       ctx.lineJoin = "round";
 
@@ -375,30 +395,30 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
         const isPast = wIdx < currentWordIndex;
 
         if (isActive) {
-            ctx.shadowColor = "rgba(0,0,0,0.9)";
-            ctx.shadowBlur = 4;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 4;
-            
-            ctx.fillStyle = "#fbbf24"; 
-            ctx.fillText(w.text, w.x, w.y);
-            
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
+          ctx.shadowColor = "rgba(0,0,0,0.9)";
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 4;
+
+          ctx.fillStyle = "#fbbf24";
+          ctx.fillText(w.text, w.x, w.y);
+
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
         } else if (isPast) {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; 
-            ctx.fillText(w.text, w.x, w.y);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.fillText(w.text, w.x, w.y);
         } else {
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 6;
-            ctx.strokeText(w.text, w.x, w.y);
-            ctx.fillStyle = "white";
-            ctx.fillText(w.text, w.x, w.y);
+          ctx.strokeStyle = "black";
+          ctx.lineWidth = 6;
+          ctx.strokeText(w.text, w.x, w.y);
+          ctx.fillStyle = "white";
+          ctx.fillText(w.text, w.x, w.y);
         }
       });
-      ctx.restore(); 
+      ctx.restore();
 
 
       // === LAYER 3: HEADER ===
@@ -406,25 +426,25 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
       ctx.font = `bold ${FONT_SIZE_BADGE}px Inter, sans-serif`;
       const dateWidth = ctx.measureText(dateText).width + 50;
       const dateX = (WIDTH - dateWidth) / 2;
-      const dateY = 80; 
-      
+      const dateY = 80;
+
       fillRoundRect(ctx, dateX, dateY, dateWidth, 44, 22, "rgba(0, 0, 0, 0.6)", "rgba(255, 255, 255, 0.15)");
-      
+
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(dateText, WIDTH/2, dateY + 22);
+      ctx.fillText(dateText, WIDTH / 2, dateY + 22);
 
       ctx.font = `900 ${FONT_SIZE_TITLE}px Inter, sans-serif`;
       ctx.shadowColor = "rgba(0,0,0,0.9)";
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 4;
       ctx.fillStyle = "white";
-      
+
       let titleY = dateY + 80;
       titleLines.forEach(line => {
-          ctx.fillText(line, WIDTH/2, titleY);
-          titleY += 45;
+        ctx.fillText(line, WIDTH / 2, titleY);
+        titleY += 45;
       });
 
 
@@ -433,16 +453,16 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
       const visCenter = WIDTH / 2;
       const visY = HEIGHT - 40; // Bottom pinned
 
-      ctx.fillStyle = "rgba(167, 139, 250, 0.6)"; 
-      for(let i = 0; i < bufferLength / 2; i++) {
-        const barHeight = (dataArray[i] / 255) * 60; 
+      ctx.fillStyle = "rgba(167, 139, 250, 0.6)";
+      for (let i = 0; i < bufferLength / 2; i++) {
+        const barHeight = (dataArray[i] / 255) * 60;
         ctx.fillRect(visCenter + (i * barWidth), visY - barHeight, barWidth - 2, barHeight);
         ctx.fillRect(visCenter - ((i + 1) * barWidth), visY - barHeight, barWidth - 2, barHeight);
       }
 
 
       // === LAYER 5: FOOTER & CALL TO ACTION ===
-      
+
       // 1. Reference Pill (Moved UP significantly to make room for CTA)
       const refText = reading.reference;
       ctx.font = `bold ${32}px Inter, sans-serif`;
@@ -452,51 +472,51 @@ export const generateVideoFile = async (reading: ReadingContent, asset: Generate
 
       ctx.shadowColor = "rgba(0,0,0,0.5)";
       ctx.shadowBlur = 10;
-      fillRoundRect(ctx, refX, refY, refWidth, 60, 16, "rgba(79, 70, 229, 0.95)"); 
+      fillRoundRect(ctx, refX, refY, refWidth, 60, 16, "rgba(79, 70, 229, 0.95)");
 
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.shadowColor = "transparent";
-      ctx.fillText(refText, WIDTH/2, refY + 30);
+      ctx.fillText(refText, WIDTH / 2, refY + 30);
 
       // 2. CALL TO ACTION (CTA) - Viral Style
       const ctaY = HEIGHT - 180;
-      
+
       // Line 1: Main Hook (Gold + Black Outline)
       ctx.font = `900 42px Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      
+
       ctx.shadowColor = "rgba(0,0,0,1)";
       ctx.shadowBlur = 15;
-      
+
       ctx.fillStyle = "#fbbf24"; // Amber-400
-      ctx.fillText("ESCRIBE 'AMÉN'", WIDTH/2, ctaY);
-      
+      ctx.fillText("ESCRIBE 'AMÉN'", WIDTH / 2, ctaY);
+
       // Strong Stroke for visibility over visualizer
       ctx.strokeStyle = "black";
       ctx.lineWidth = 6;
-      ctx.strokeText("ESCRIBE 'AMÉN'", WIDTH/2, ctaY);
-      ctx.fillText("ESCRIBE 'AMÉN'", WIDTH/2, ctaY); 
+      ctx.strokeText("ESCRIBE 'AMÉN'", WIDTH / 2, ctaY);
+      ctx.fillText("ESCRIBE 'AMÉN'", WIDTH / 2, ctaY);
 
       // Line 2: Subtitle (White)
       ctx.font = `bold 24px Inter, sans-serif`;
       ctx.fillStyle = "white";
       ctx.shadowBlur = 4;
       ctx.shadowColor = "black";
-      ctx.fillText("Y COMPARTE LA PALABRA DEL SEÑOR", WIDTH/2, ctaY + 45);
+      ctx.fillText("Y COMPARTE LA PALABRA DEL SEÑOR", WIDTH / 2, ctaY + 45);
 
 
       // === LAYER 6: PROGRESS BAR ===
       const barHeight = 14;
       const gradBar = ctx.createLinearGradient(0, 0, WIDTH, 0);
-      gradBar.addColorStop(0, "#6366f1"); 
-      gradBar.addColorStop(1, "#a855f7"); 
-      
-      ctx.fillStyle = "#111827"; 
+      gradBar.addColorStop(0, "#6366f1");
+      gradBar.addColorStop(1, "#a855f7");
+
+      ctx.fillStyle = "#111827";
       ctx.fillRect(0, HEIGHT - barHeight, WIDTH, barHeight);
-      
+
       ctx.fillStyle = gradBar;
       ctx.shadowColor = "rgba(168, 85, 247, 0.6)";
       ctx.shadowBlur = 15;
