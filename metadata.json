@@ -1,0 +1,5 @@
+{
+  "name": "EvangelioAuto Studio",
+  "description": "An AI-powered automation suite to fetch daily Gospel readings, generate thematic images, and create voiceovers for social media video creation.",
+  "requestFramePermissions": []
+}

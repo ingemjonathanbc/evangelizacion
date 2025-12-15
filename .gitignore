@@ -1,0 +1,13 @@
+node_modules
+.env
+.env.local
+dist
+build
+*.mp4
+*.webm
+*.wav
+__pycache__
+backend/__pycache__
+backend/venv
+.vscode
+.DS_Store
